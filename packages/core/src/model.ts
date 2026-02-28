@@ -7,7 +7,6 @@ export type Stack<T> = null | {
 
 export type CalculatorSnapshot = {
   readonly stack: Stack<CalcValue>;
-  readonly entry: string;
   readonly error: string | null;
 };
 
@@ -63,11 +62,8 @@ export const operators: Record<OperatorKey, Operator> = {
 };
 
 export type Command =
-  | { readonly type: "digit"; readonly value: string }
-  | { readonly type: "dot" }
-  | { readonly type: "enter" }
+  | { readonly type: "enter"; readonly value: string }
   | { readonly type: "operator"; readonly operator: OperatorKey }
   | { readonly type: "clear" }
-  | { readonly type: "backspace" }
   | { readonly type: "undo" }
   | { readonly type: "redo" };

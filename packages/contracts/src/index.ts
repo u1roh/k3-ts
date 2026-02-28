@@ -8,7 +8,6 @@ import {
 
 export interface DisplayModel {
   readonly stackLines: ReadonlyArray<string>;
-  readonly entryLine: string;
   readonly error: string | null;
 }
 
@@ -29,25 +28,12 @@ export const createCalculatorFacade = (): CalculatorFacade => {
     },
     toDisplayModel: (current = state) => ({
       stackLines: stackToArray(current.snapshot.stack).map((v) => `${v}`),
-      entryLine: current.snapshot.entry === "" ? "_" : current.snapshot.entry,
       error: current.snapshot.error
     })
   };
 };
 
 export type KeyIntent =
-  | "0"
-  | "1"
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "7"
-  | "8"
-  | "9"
-  | "."
-  | "ENTER"
   | "+"
   | "-"
   | "*"
@@ -55,20 +41,11 @@ export type KeyIntent =
   | "SWAP"
   | "DROP"
   | "CLR"
-  | "BACK"
   | "UNDO"
   | "REDO";
 
 export const keyIntentToCommand = (intent: KeyIntent): Command => {
-  if (/^\d$/.test(intent)) {
-    return { type: "digit", value: intent };
-  }
-
   switch (intent) {
-    case ".":
-      return { type: "dot" };
-    case "ENTER":
-      return { type: "enter" };
     case "+":
     case "-":
     case "*":
@@ -80,8 +57,6 @@ export const keyIntentToCommand = (intent: KeyIntent): Command => {
       return { type: "operator", operator: "drop" };
     case "CLR":
       return { type: "clear" };
-    case "BACK":
-      return { type: "backspace" };
     case "UNDO":
       return { type: "undo" };
     case "REDO":

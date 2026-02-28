@@ -1,7 +1,9 @@
 import { createCalculatorFacade, keyIntentToCommand, KeyIntent } from "@rpn/contracts";
 import "./style.css";
 
-const keypadIntents: ReadonlyArray<KeyIntent> = [
+type KeypadIntent = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "." | "BACK";
+
+const keypadIntents: ReadonlyArray<KeypadIntent> = [
   "7", "8", "9",
   "4", "5", "6",
   "1", "2", "3",
@@ -45,6 +47,7 @@ app.innerHTML = `
 `;
 
 const facade = createCalculatorFacade();
+let entryDraft = "";
 const errorEl = document.querySelector<HTMLDivElement>("#error");
 const stackEl = document.querySelector<HTMLDivElement>("#stack");
 const entryEl = document.querySelector<HTMLInputElement>("#entry");
@@ -62,13 +65,61 @@ const runIntent = (intent: KeyIntent) => {
   render();
 };
 
-const createKey = (label: string, intent: KeyIntent, className: string): HTMLButtonElement => {
+const appendEntry = (value: string) => {
+  if (!/^\d$/.test(value) && value !== ".") {
+    return;
+  }
+  if (value === "." && entryDraft.includes(".")) {
+    return;
+  }
+  entryDraft += value;
+  render();
+};
+
+const backspaceEntry = () => {
+  if (entryDraft.length === 0) {
+    return;
+  }
+  entryDraft = entryDraft.slice(0, -1);
+  render();
+};
+
+const commitEntry = () => {
+  if (entryDraft === "") {
+    return;
+  }
+  facade.dispatch({ type: "enter", value: entryDraft });
+  entryDraft = "";
+  render();
+};
+
+const runCommandIntent = (intent: KeyIntent) => {
+  if (intent === "CLR") {
+    entryDraft = "";
+  }
+  if ((intent === "+" || intent === "-" || intent === "*" || intent === "/" || intent === "SWAP" || intent === "DROP") && entryDraft !== "") {
+    commitEntry();
+  }
+  runIntent(intent);
+};
+
+const createKey = (label: string, intent: string, className: string): HTMLButtonElement => {
   const button = document.createElement("button");
   button.type = "button";
   button.className = className;
   button.dataset.intent = intent;
   button.textContent = label;
-  button.addEventListener("click", () => runIntent(intent));
+  button.addEventListener("click", () => {
+    if (intent === "BACK") {
+      backspaceEntry();
+      return;
+    }
+    if (/^\d$/.test(intent) || intent === ".") {
+      appendEntry(intent);
+      return;
+    }
+    runCommandIntent(intent as KeyIntent);
+  });
   return button;
 };
 
@@ -84,7 +135,9 @@ operatorIntents.forEach((intent) => {
   opsEl.append(createKey(intent, intent, "op-key"));
 });
 
-enterKeyEl.addEventListener("click", () => runIntent("ENTER"));
+enterKeyEl.addEventListener("click", () => {
+  commitEntry();
+});
 
 const renderStackLines = (lines: ReadonlyArray<string>): string =>
   lines.length === 0 ? "(empty)" : lines.join("<br />");
@@ -92,7 +145,7 @@ const renderStackLines = (lines: ReadonlyArray<string>): string =>
 const render = () => {
   const display = facade.toDisplayModel();
   stackEl.innerHTML = renderStackLines(display.stackLines);
-  entryEl.value = display.entryLine === "_" ? "" : display.entryLine;
+  entryEl.value = entryDraft;
   entryEl.placeholder = "_";
   errorEl.textContent = display.error ?? "";
 };
@@ -114,23 +167,46 @@ window.addEventListener("keydown", (event) => {
   }
 
   const map: Record<string, KeyIntent | undefined> = {
-    Enter: "ENTER",
-    Backspace: "BACK",
-    Delete: "DROP",
-    Escape: "CLR",
-    ".": ".",
     "+": "+",
     "-": "-",
     "*": "*",
-    "/": "/"
+    "/": "/",
+    Delete: "DROP",
+    Escape: "CLR",
+    F7: "UNDO",
+    F8: "REDO"
   };
-  const digit = /^\d$/.test(event.key) ? (event.key as KeyIntent) : undefined;
-  const intent = digit ?? map[event.key];
+
+  if (event.key === "Enter") {
+    event.preventDefault();
+    commitEntry();
+    return;
+  }
+
+  if (event.key === "Backspace") {
+    event.preventDefault();
+    backspaceEntry();
+    return;
+  }
+
+  if (/^\d$/.test(event.key)) {
+    event.preventDefault();
+    appendEntry(event.key);
+    return;
+  }
+
+  if (event.key === ".") {
+    event.preventDefault();
+    appendEntry(".");
+    return;
+  }
+
+  const intent = map[event.key];
   if (!intent) {
     return;
   }
   event.preventDefault();
-  runIntent(intent);
+  runCommandIntent(intent);
 });
 
 render();

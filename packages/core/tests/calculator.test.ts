@@ -7,10 +7,8 @@ const run = (sequence: Parameters<typeof reduce>[1][]) =>
 describe("RPN reducer", () => {
   it("calculates 3 4 +", () => {
     const state = run([
-      { type: "digit", value: "3" },
-      { type: "enter" },
-      { type: "digit", value: "4" },
-      { type: "enter" },
+      { type: "enter", value: "3" },
+      { type: "enter", value: "4" },
       { type: "operator", operator: "+" }
     ]);
 
@@ -25,10 +23,8 @@ describe("RPN reducer", () => {
 
   it("supports undo and redo", () => {
     const state = run([
-      { type: "digit", value: "2" },
-      { type: "enter" },
-      { type: "digit", value: "3" },
-      { type: "enter" },
+      { type: "enter", value: "2" },
+      { type: "enter", value: "3" },
       { type: "operator", operator: "+" },
       { type: "undo" }
     ]);
@@ -36,5 +32,16 @@ describe("RPN reducer", () => {
 
     const redone = reduce(state, { type: "redo" });
     expect(stackToArray(redone.snapshot.stack)).toEqual([5]);
+  });
+
+  it("undoes two entered values in two steps", () => {
+    const state = run([
+      { type: "enter", value: "1" },
+      { type: "enter", value: "2" },
+      { type: "undo" },
+      { type: "undo" }
+    ]);
+
+    expect(stackToArray(state.snapshot.stack)).toEqual([]);
   });
 });
