@@ -71,11 +71,11 @@ export const keyIntentToCommand = (intent: KeyIntent): Command => {
     case "-":
     case "*":
     case "/":
-      return { type: "binary", operator: intent };
+      return { type: "operator", operator: intent };
     case "SWAP":
-      return { type: "swap" };
+      return { type: "operator", operator: "swap" };
     case "DROP":
-      return { type: "drop" };
+      return { type: "operator", operator: "drop" };
     case "CLR":
       return { type: "clear" };
     case "BACK":

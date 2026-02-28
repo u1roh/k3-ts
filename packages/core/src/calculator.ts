@@ -1,4 +1,4 @@
-import { CalculatorState, Command, Stack } from "./model";
+import { applyOperator, CalculatorState, Command, operators, Stack } from "./model";
 
 export const initialState = (): CalculatorState => ({
   stack: null,
@@ -17,30 +17,6 @@ const parseEntry = (entry: string): number | null => {
   }
   const value = Number(entry);
   return Number.isFinite(value) ? value : null;
-};
-
-export const stackPush = (stack: Stack, value: number): Stack => ({
-  head: value,
-  tail: stack
-});
-
-export const stackPop = (
-  stack: Stack
-): { readonly value: number; readonly rest: Stack } | null => {
-  if (stack === null) {
-    return null;
-  }
-  return { value: stack.head, rest: stack.tail };
-};
-
-export const stackSize = (stack: Stack): number => {
-  let count = 0;
-  let current = stack;
-  while (current !== null) {
-    count += 1;
-    current = current.tail;
-  }
-  return count;
 };
 
 export const stackToArray = (stack: Stack): ReadonlyArray<number> => {
@@ -63,45 +39,7 @@ const commitEntry = (state: CalculatorState): CalculatorState => {
     return setError(state, "Invalid number entry");
   }
   return {
-    stack: stackPush(state.stack, parsed),
-    entry: "",
-    error: null
-  };
-};
-
-const requireStack = (state: CalculatorState, required: number): CalculatorState | null => {
-  if (stackSize(state.stack) < required) {
-    return setError(state, `Need ${required} values on stack`);
-  }
-  return null;
-};
-
-const applyBinary = (state: CalculatorState, op: (a: number, b: number) => number): CalculatorState => {
-  const committed = commitEntry(state);
-  const stackError = requireStack(committed, 2);
-  if (stackError) {
-    return stackError;
-  }
-
-  const top = stackPop(committed.stack);
-  if (top === null) {
-    return setError(committed, "Need 2 values on stack");
-  }
-  const next = stackPop(top.rest);
-  if (next === null) {
-    return setError(committed, "Need 2 values on stack");
-  }
-
-  const a = next.value;
-  const b = top.value;
-  const result = op(a, b);
-
-  if (!Number.isFinite(result)) {
-    return setError(committed, "Calculation error");
-  }
-
-  return {
-    stack: stackPush(next.rest, result),
+    stack: { head: parsed, tail: state.stack },
     entry: "",
     error: null
   };
@@ -130,49 +68,9 @@ export const reduce = (state: CalculatorState, command: Command): CalculatorStat
     }
     case "enter":
       return commitEntry(state);
-    case "binary": {
-      if (command.operator === "/") {
-        return applyBinary(state, (a, b) => a / b);
-      }
-      if (command.operator === "*") {
-        return applyBinary(state, (a, b) => a * b);
-      }
-      if (command.operator === "-") {
-        return applyBinary(state, (a, b) => a - b);
-      }
-      return applyBinary(state, (a, b) => a + b);
-    }
-    case "swap": {
+    case "operator": {
       const committed = commitEntry(state);
-      const stackError = requireStack(committed, 2);
-      if (stackError) {
-        return stackError;
-      }
-      const top = stackPop(committed.stack);
-      if (top === null) {
-        return setError(committed, "Need 2 values on stack");
-      }
-      const second = stackPop(top.rest);
-      if (second === null) {
-        return setError(committed, "Need 2 values on stack");
-      }
-
-      return {
-        ...committed,
-        stack: stackPush(stackPush(second.rest, top.value), second.value),
-        error: null
-      };
-    }
-    case "drop": {
-      if (state.entry !== "") {
-        return { ...state, entry: "", error: null };
-      }
-      const stackError = requireStack(state, 1);
-      if (stackError) {
-        return stackError;
-      }
-      const popped = stackPop(state.stack);
-      return { ...state, stack: popped?.rest ?? null, error: null };
+      return applyOperator({ ...committed, error: null }, operators[command.operator]);
     }
     case "clear":
       return initialState();

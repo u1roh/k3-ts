@@ -11,7 +11,7 @@ describe("RPN reducer", () => {
       { type: "enter" },
       { type: "digit", value: "4" },
       { type: "enter" },
-      { type: "binary", operator: "+" }
+      { type: "operator", operator: "+" }
     ]);
 
     expect(stackToArray(state.stack)).toEqual([7]);
@@ -19,7 +19,7 @@ describe("RPN reducer", () => {
   });
 
   it("returns stack underflow", () => {
-    const state = run([{ type: "binary", operator: "+" }]);
+    const state = run([{ type: "operator", operator: "+" }]);
     expect(state.error).toMatch(/Need 2/);
   });
 });
