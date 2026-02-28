@@ -1,0 +1,71 @@
+:root {
+  color-scheme: light;
+  font-family: "Avenir Next", "Hiragino Kaku Gothic ProN", sans-serif;
+  background: radial-gradient(circle at top, #f9fafb, #e5e7eb);
+  color: #111827;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.shell {
+  width: min(100vw - 1.5rem, 420px);
+  background: #ffffffd9;
+  border-radius: 16px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 12px 28px rgb(31 41 55 / 18%);
+  padding: 1rem;
+}
+
+.display {
+  background: #111827;
+  border-radius: 12px;
+  color: #f9fafb;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.error {
+  min-height: 1.25rem;
+  color: #fca5a5;
+  font-size: 0.8rem;
+}
+
+.stack {
+  min-height: 6rem;
+  margin: 0;
+  font-family: "Menlo", "Consolas", monospace;
+}
+
+.entry {
+  text-align: right;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.key {
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 0.5rem;
+  background: linear-gradient(180deg, #f9fafb, #e5e7eb);
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.key:active {
+  transform: translateY(1px);
+}

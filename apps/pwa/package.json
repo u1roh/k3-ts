@@ -1,0 +1,20 @@
+{
+  "name": "@rpn/pwa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rpn/contracts": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vite": "^5.4.14",
+    "vite-plugin-pwa": "^0.20.5"
+  }
+}

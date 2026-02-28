@@ -1,0 +1,19 @@
+{
+  "name": "@rpn/contracts",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@rpn/core": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
