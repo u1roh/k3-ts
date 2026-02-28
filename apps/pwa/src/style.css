@@ -51,20 +51,36 @@ body {
   font-family: "Menlo", "Consolas", monospace;
 }
 
-.input-area {
+.command-area {
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: 0.5rem;
 }
 
-.entry-input {
-  width: 100%;
-  border: 1px solid #d1d5db;
+.commands {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.command-key {
+  min-height: 2.7rem;
+  border: none;
   border-radius: 10px;
-  padding: 0.75rem;
-  font-size: 1.25rem;
-  text-align: right;
-  background: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #475569;
+  color: #ffffff;
+}
+
+.input-area {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.entry-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
 }
 
 .enter-key {
@@ -77,9 +93,14 @@ body {
   color: #ffffff;
 }
 
-.keypad-area {
-  display: grid;
-  gap: 0.5rem;
+.entry-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-size: 1.25rem;
+  text-align: right;
+  background: #ffffff;
 }
 
 .keypad {
@@ -116,6 +137,7 @@ body {
 }
 
 .key:active,
+.command-key:active,
 .op-key:active,
 .enter-key:active {
   transform: translateY(1px);
