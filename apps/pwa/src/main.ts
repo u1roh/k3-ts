@@ -13,6 +13,8 @@ const operatorIntents: ReadonlyArray<KeyIntent> = [
 ];
 
 const commandIntents = [
+  { label: "UNDO", intent: "UNDO" as KeyIntent },
+  { label: "REDO", intent: "REDO" as KeyIntent },
   { label: "CLEAR", intent: "CLR" as KeyIntent },
   { label: "DEL", intent: "DROP" as KeyIntent }
 ];
@@ -96,6 +98,21 @@ const render = () => {
 };
 
 window.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
+    event.preventDefault();
+    if (event.shiftKey) {
+      runIntent("REDO");
+    } else {
+      runIntent("UNDO");
+    }
+    return;
+  }
+  if (event.ctrlKey && event.key.toLowerCase() === "y") {
+    event.preventDefault();
+    runIntent("REDO");
+    return;
+  }
+
   const map: Record<string, KeyIntent | undefined> = {
     Enter: "ENTER",
     Backspace: "BACK",

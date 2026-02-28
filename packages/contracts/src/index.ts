@@ -28,9 +28,9 @@ export const createCalculatorFacade = (): CalculatorFacade => {
       return state;
     },
     toDisplayModel: (current = state) => ({
-      stackLines: stackToArray(current.stack).map((v) => `${v}`),
-      entryLine: current.entry === "" ? "_" : current.entry,
-      error: current.error
+      stackLines: stackToArray(current.snapshot.stack).map((v) => `${v}`),
+      entryLine: current.snapshot.entry === "" ? "_" : current.snapshot.entry,
+      error: current.snapshot.error
     })
   };
 };
@@ -55,7 +55,9 @@ export type KeyIntent =
   | "SWAP"
   | "DROP"
   | "CLR"
-  | "BACK";
+  | "BACK"
+  | "UNDO"
+  | "REDO";
 
 export const keyIntentToCommand = (intent: KeyIntent): Command => {
   if (/^\d$/.test(intent)) {
@@ -80,6 +82,10 @@ export const keyIntentToCommand = (intent: KeyIntent): Command => {
       return { type: "clear" };
     case "BACK":
       return { type: "backspace" };
+    case "UNDO":
+      return { type: "undo" };
+    case "REDO":
+      return { type: "redo" };
     default:
       return { type: "clear" };
   }

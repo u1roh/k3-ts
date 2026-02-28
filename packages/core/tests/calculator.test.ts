@@ -14,12 +14,27 @@ describe("RPN reducer", () => {
       { type: "operator", operator: "+" }
     ]);
 
-    expect(stackToArray(state.stack)).toEqual([7]);
-    expect(state.error).toBeNull();
+    expect(stackToArray(state.snapshot.stack)).toEqual([7]);
+    expect(state.snapshot.error).toBeNull();
   });
 
   it("returns stack underflow", () => {
     const state = run([{ type: "operator", operator: "+" }]);
-    expect(state.error).toMatch(/Need 2/);
+    expect(state.snapshot.error).toMatch(/Need 2/);
+  });
+
+  it("supports undo and redo", () => {
+    const state = run([
+      { type: "digit", value: "2" },
+      { type: "enter" },
+      { type: "digit", value: "3" },
+      { type: "enter" },
+      { type: "operator", operator: "+" },
+      { type: "undo" }
+    ]);
+    expect(stackToArray(state.snapshot.stack)).toEqual([2, 3]);
+
+    const redone = reduce(state, { type: "redo" });
+    expect(stackToArray(redone.snapshot.stack)).toEqual([5]);
   });
 });

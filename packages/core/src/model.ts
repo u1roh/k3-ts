@@ -1,24 +1,30 @@
 export type CalcValue = number;
 
-export type Stack = null | {
-  readonly head: CalcValue;
-  readonly tail: Stack;
+export type Stack<T> = null | {
+  readonly head: T;
+  readonly tail: Stack<T>;
+};
+
+export type CalculatorSnapshot = {
+  readonly stack: Stack<CalcValue>;
+  readonly entry: string;
+  readonly error: string | null;
 };
 
 export interface CalculatorState {
-  readonly stack: Stack;
-  readonly entry: string;
-  readonly error: string | null;
+  readonly snapshot: CalculatorSnapshot;
+  readonly undoBuffer: Stack<CalculatorSnapshot>;
+  readonly redoBuffer: Stack<CalculatorSnapshot>;
 }
 
-export type Operator = (stack: Stack) => Stack | string;
+export type Operator = (stack: Stack<CalcValue>) => Stack<CalcValue> | string;
 export type OperatorKey = "drop" | "swap" | "+" | "-" | "*" | "/";
 
-export const applyOperator = (state: CalculatorState, fn: Operator): CalculatorState => {
-  const result = fn(state.stack);
+export const applyOperator = (snapshot: CalculatorSnapshot, fn: Operator): CalculatorSnapshot => {
+  const result = fn(snapshot.stack);
   return typeof result === "string"
-    ? { ...state, error: result }
-    : { ...state, stack: result, error: null };
+    ? { ...snapshot, error: result }
+    : { ...snapshot, stack: result, error: null };
 };
 
 type BinaryOp = (a: number, b: number) => number;
@@ -62,4 +68,6 @@ export type Command =
   | { readonly type: "enter" }
   | { readonly type: "operator"; readonly operator: OperatorKey }
   | { readonly type: "clear" }
-  | { readonly type: "backspace" };
+  | { readonly type: "backspace" }
+  | { readonly type: "undo" }
+  | { readonly type: "redo" };
