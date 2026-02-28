@@ -21,6 +21,20 @@ describe("RPN reducer", () => {
     expect(state.snapshot.error).toMatch(/Need 2/);
   });
 
+  it("applies unary functions", () => {
+    const state = run([
+      { type: "enter", value: "9" },
+      { type: "operator", operator: "sqrt" },
+      { type: "operator", operator: "square" }
+    ]);
+    expect(stackToArray(state.snapshot.stack)).toEqual([9]);
+  });
+
+  it("returns unary underflow for empty stack", () => {
+    const state = run([{ type: "operator", operator: "sin" }]);
+    expect(state.snapshot.error).toMatch(/Need 1/);
+  });
+
   it("supports undo and redo", () => {
     const state = run([
       { type: "enter", value: "2" },

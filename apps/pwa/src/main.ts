@@ -14,6 +14,17 @@ const operatorIntents: ReadonlyArray<KeyIntent> = [
   "+", "-", "*", "/"
 ];
 
+const functionIntents = [
+  { label: "x^2", intent: "SQR" as KeyIntent },
+  { label: "sqrt", intent: "SQRT" as KeyIntent },
+  { label: "sin", intent: "SIN" as KeyIntent },
+  { label: "cos", intent: "COS" as KeyIntent },
+  { label: "tan", intent: "TAN" as KeyIntent },
+  { label: "exp", intent: "EXP" as KeyIntent },
+  { label: "ln", intent: "LN" as KeyIntent },
+  { label: "log10", intent: "LOG" as KeyIntent }
+];
+
 const commandIntents = [
   { label: "UNDO", intent: "UNDO" as KeyIntent },
   { label: "REDO", intent: "REDO" as KeyIntent },
@@ -37,6 +48,7 @@ app.innerHTML = `
       <div id="ops" class="ops"></div>
     </section>
     <section class="input-area">
+      <div id="fx-panel" class="fx-panel hidden"></div>
       <div class="entry-row">
         <input id="entry" class="entry-input" type="text" readonly />
         <button id="enter-key" class="enter-key" type="button">ENTER</button>
@@ -48,15 +60,19 @@ app.innerHTML = `
 
 const facade = createCalculatorFacade();
 let entryDraft = "";
+let fxOpen = false;
+let fxGesturePointerId: number | null = null;
+let fxHoverIntent: KeyIntent | null = null;
 const errorEl = document.querySelector<HTMLDivElement>("#error");
 const stackEl = document.querySelector<HTMLDivElement>("#stack");
 const entryEl = document.querySelector<HTMLInputElement>("#entry");
 const commandsEl = document.querySelector<HTMLDivElement>("#commands");
 const opsEl = document.querySelector<HTMLDivElement>("#ops");
+const fxPanelEl = document.querySelector<HTMLDivElement>("#fx-panel");
 const keypadEl = document.querySelector<HTMLDivElement>("#keypad");
 const enterKeyEl = document.querySelector<HTMLButtonElement>("#enter-key");
 
-if (!errorEl || !stackEl || !entryEl || !commandsEl || !opsEl || !keypadEl || !enterKeyEl) {
+if (!errorEl || !stackEl || !entryEl || !commandsEl || !opsEl || !fxPanelEl || !keypadEl || !enterKeyEl) {
   throw new Error("Missing UI elements");
 }
 
@@ -97,7 +113,11 @@ const runCommandIntent = (intent: KeyIntent) => {
   if (intent === "CLR") {
     entryDraft = "";
   }
-  if ((intent === "+" || intent === "-" || intent === "*" || intent === "/" || intent === "SWAP" || intent === "DROP") && entryDraft !== "") {
+  const needsCommittedEntry: ReadonlyArray<KeyIntent> = [
+    "+", "-", "*", "/", "SWAP", "DROP",
+    "SQR", "SQRT", "SIN", "COS", "TAN", "EXP", "LN", "LOG"
+  ];
+  if (needsCommittedEntry.includes(intent) && entryDraft !== "") {
     commitEntry();
   }
   runIntent(intent);
@@ -114,12 +134,24 @@ const createKey = (label: string, intent: string, className: string): HTMLButton
       backspaceEntry();
       return;
     }
+    if (intent === "FX") {
+      return;
+    }
     if (/^\d$/.test(intent) || intent === ".") {
       appendEntry(intent);
       return;
     }
     runCommandIntent(intent as KeyIntent);
   });
+  return button;
+};
+
+const createFxKey = (label: string, intent: KeyIntent): HTMLButtonElement => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "fx-key";
+  button.dataset.intent = intent;
+  button.textContent = label;
   return button;
 };
 
@@ -135,6 +167,13 @@ operatorIntents.forEach((intent) => {
   opsEl.append(createKey(intent, intent, "op-key"));
 });
 
+const fxToggleEl = createKey("f(x)", "FX", "fx-toggle");
+opsEl.append(fxToggleEl);
+
+functionIntents.forEach(({ label, intent }) => {
+  fxPanelEl.append(createFxKey(label, intent));
+});
+
 enterKeyEl.addEventListener("click", () => {
   commitEntry();
 });
@@ -142,12 +181,73 @@ enterKeyEl.addEventListener("click", () => {
 const renderStackLines = (lines: ReadonlyArray<string>): string =>
   lines.length === 0 ? "(empty)" : lines.join("<br />");
 
+const updateFxHover = (x: number, y: number) => {
+  const hit = document.elementFromPoint(x, y);
+  const button = hit?.closest(".fx-key") as HTMLButtonElement | null;
+  const nextIntent = (button?.dataset.intent ?? null) as KeyIntent | null;
+  if (fxHoverIntent === nextIntent) {
+    return;
+  }
+  fxHoverIntent = nextIntent;
+  render();
+};
+
+const finishFxGesture = () => {
+  const selected = fxHoverIntent;
+  fxGesturePointerId = null;
+  fxHoverIntent = null;
+  fxOpen = false;
+  render();
+  if (selected) {
+    runCommandIntent(selected);
+  }
+};
+
+fxToggleEl.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  fxGesturePointerId = event.pointerId;
+  fxHoverIntent = null;
+  fxOpen = true;
+  fxToggleEl.setPointerCapture(event.pointerId);
+  render();
+});
+
+window.addEventListener("pointermove", (event) => {
+  if (fxGesturePointerId === null || event.pointerId !== fxGesturePointerId) {
+    return;
+  }
+  updateFxHover(event.clientX, event.clientY);
+});
+
+window.addEventListener("pointerup", (event) => {
+  if (fxGesturePointerId === null || event.pointerId !== fxGesturePointerId) {
+    return;
+  }
+  finishFxGesture();
+});
+
+window.addEventListener("pointercancel", (event) => {
+  if (fxGesturePointerId === null || event.pointerId !== fxGesturePointerId) {
+    return;
+  }
+  fxGesturePointerId = null;
+  fxHoverIntent = null;
+  fxOpen = false;
+  render();
+});
+
 const render = () => {
   const display = facade.toDisplayModel();
   stackEl.innerHTML = renderStackLines(display.stackLines);
   entryEl.value = entryDraft;
   entryEl.placeholder = "_";
   errorEl.textContent = display.error ?? "";
+  fxPanelEl.classList.toggle("hidden", !fxOpen);
+  fxToggleEl.classList.toggle("active", fxOpen);
+  fxPanelEl.querySelectorAll<HTMLButtonElement>(".fx-key").forEach((button) => {
+    const active = button.dataset.intent === fxHoverIntent;
+    button.classList.toggle("active", active);
+  });
 };
 
 window.addEventListener("keydown", (event) => {

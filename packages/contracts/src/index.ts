@@ -38,6 +38,14 @@ export type KeyIntent =
   | "-"
   | "*"
   | "/"
+  | "SQR"
+  | "SQRT"
+  | "SIN"
+  | "COS"
+  | "TAN"
+  | "EXP"
+  | "LN"
+  | "LOG"
   | "SWAP"
   | "DROP"
   | "CLR"
@@ -51,6 +59,22 @@ export const keyIntentToCommand = (intent: KeyIntent): Command => {
     case "*":
     case "/":
       return { type: "operator", operator: intent };
+    case "SQR":
+      return { type: "operator", operator: "square" };
+    case "SQRT":
+      return { type: "operator", operator: "sqrt" };
+    case "SIN":
+      return { type: "operator", operator: "sin" };
+    case "COS":
+      return { type: "operator", operator: "cos" };
+    case "TAN":
+      return { type: "operator", operator: "tan" };
+    case "EXP":
+      return { type: "operator", operator: "exp" };
+    case "LN":
+      return { type: "operator", operator: "ln" };
+    case "LOG":
+      return { type: "operator", operator: "log10" };
     case "SWAP":
       return { type: "operator", operator: "swap" };
     case "DROP":

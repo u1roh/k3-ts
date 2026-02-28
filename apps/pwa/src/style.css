@@ -73,6 +73,7 @@ body {
 }
 
 .input-area {
+  position: relative;
   display: grid;
   gap: 0.5rem;
 }
@@ -122,8 +123,60 @@ body {
 
 .ops {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
+}
+
+.fx-toggle {
+  min-height: 2.75rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #0f766e;
+  color: #ffffff;
+  touch-action: none;
+}
+
+.fx-toggle.active {
+  background: #115e59;
+}
+
+.fx-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  padding: 0.6rem;
+  border-radius: 12px;
+  border: 1px solid #94a3b8;
+  background: #e2e8f0;
+  box-shadow: 0 10px 26px rgb(15 23 42 / 20%);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 3rem;
+  align-content: start;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.fx-key {
+  height: 3rem;
+  min-height: 3rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #334155;
+  color: #ffffff;
+  touch-action: none;
+}
+
+.fx-key.active {
+  background: #0f766e;
+}
+
+.hidden {
+  display: none;
 }
 
 .op-key {
@@ -138,6 +191,8 @@ body {
 
 .key:active,
 .command-key:active,
+.fx-toggle:active,
+.fx-key:active,
 .op-key:active,
 .enter-key:active {
   transform: translateY(1px);

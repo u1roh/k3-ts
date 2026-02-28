@@ -17,7 +17,21 @@ export interface CalculatorState {
 }
 
 export type Operator = (stack: Stack<CalcValue>) => Stack<CalcValue> | string;
-export type OperatorKey = "drop" | "swap" | "+" | "-" | "*" | "/";
+export type OperatorKey =
+  | "drop"
+  | "swap"
+  | "+"
+  | "-"
+  | "*"
+  | "/"
+  | "square"
+  | "sqrt"
+  | "sin"
+  | "cos"
+  | "tan"
+  | "exp"
+  | "ln"
+  | "log10";
 
 export const applyOperator = (snapshot: CalculatorSnapshot, fn: Operator): CalculatorSnapshot => {
   const result = fn(snapshot.stack);
@@ -27,6 +41,7 @@ export const applyOperator = (snapshot: CalculatorSnapshot, fn: Operator): Calcu
 };
 
 type BinaryOp = (a: number, b: number) => number;
+type UnaryOp = (a: number) => number;
 
 const fromBinaryOp = (op: BinaryOp): Operator => {
   return (stack) => {
@@ -40,6 +55,19 @@ const fromBinaryOp = (op: BinaryOp): Operator => {
     return { head: result, tail: stack.tail.tail };
   }
 }
+
+const fromUnaryOp = (op: UnaryOp): Operator => {
+  return (stack) => {
+    if (stack === null) {
+      return "Need 1 value on stack";
+    }
+    const result = op(stack.head);
+    if (!Number.isFinite(result)) {
+      return "Calculation error";
+    }
+    return { head: result, tail: stack.tail };
+  };
+};
 
 export const operators: Record<OperatorKey, Operator> = {
   "drop": (stack) => stack?.tail ?? null,
@@ -58,7 +86,15 @@ export const operators: Record<OperatorKey, Operator> = {
   "+": fromBinaryOp((a, b) => a + b),
   "-": fromBinaryOp((a, b) => a - b),
   "*": fromBinaryOp((a, b) => a * b),
-  "/": fromBinaryOp((a, b) => a / b)
+  "/": fromBinaryOp((a, b) => a / b),
+  "square": fromUnaryOp((x) => x * x),
+  "sqrt": fromUnaryOp((x) => Math.sqrt(x)),
+  "sin": fromUnaryOp((x) => Math.sin(x)),
+  "cos": fromUnaryOp((x) => Math.cos(x)),
+  "tan": fromUnaryOp((x) => Math.tan(x)),
+  "exp": fromUnaryOp((x) => Math.exp(x)),
+  "ln": fromUnaryOp((x) => Math.log(x)),
+  "log10": fromUnaryOp((x) => Math.log10(x))
 };
 
 export type Command =
