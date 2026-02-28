@@ -51,6 +51,7 @@ body {
   overflow-y: auto;
   align-self: start;
   text-align: left;
+  white-space: pre;
   line-height: 1.45;
   font-family: "Menlo", "Consolas", monospace;
 }

@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "apple-touch-icon.png"],
       manifest: {
-        name: "RPN Calculator",
-        short_name: "RPN Calc",
+        name: "k3 RPN",
+        short_name: "k3 RPN",
         description: "Personal RPN calculator as a PWA",
         theme_color: "#1f2937",
         background_color: "#f3f4f6",

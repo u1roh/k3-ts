@@ -17,6 +17,29 @@ export interface CalculatorFacade {
   toDisplayModel(state?: CalculatorState): DisplayModel;
 }
 
+const INT_DIGITS = 10;
+const INT_WIDTH_WITH_COMMAS = 13;
+
+const formatStackValue = (value: number): string => {
+  if (!Number.isFinite(value)) {
+    return `${value}`;
+  }
+
+  if (Math.abs(value) >= 10 ** INT_DIGITS) {
+    return value.toExponential(6);
+  }
+
+  const sign = value < 0 ? "-" : " ";
+  const abs = Math.abs(value);
+  const localized = abs.toLocaleString("en-US", {
+    useGrouping: true,
+    maximumFractionDigits: 10
+  });
+  const [intPart = "0", fracPart = "0"] = localized.split(".");
+  const paddedIntPart = intPart.padStart(INT_WIDTH_WITH_COMMAS, " ");
+  return `${sign}${paddedIntPart}.${fracPart}`;
+};
+
 export const createCalculatorFacade = (): CalculatorFacade => {
   let state = initialState();
 
@@ -27,7 +50,7 @@ export const createCalculatorFacade = (): CalculatorFacade => {
       return state;
     },
     toDisplayModel: (current = state) => ({
-      stackLines: stackToArray(current.snapshot.stack).map((v) => `${v}`),
+      stackLines: stackToArray(current.snapshot.stack).map(formatStackValue),
       error: current.snapshot.error
     })
   };

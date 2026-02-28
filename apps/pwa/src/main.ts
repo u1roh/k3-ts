@@ -294,11 +294,11 @@ enterKeyEl.addEventListener("click", () => {
 });
 
 const renderStackLines = (lines: ReadonlyArray<string>): string =>
-  lines.length === 0 ? "(empty)" : lines.join("<br />");
+  lines.length === 0 ? "(empty)" : lines.join("\n");
 
 const render = () => {
   const display = facade.toDisplayModel();
-  stackEl.innerHTML = renderStackLines(display.stackLines);
+  stackEl.textContent = renderStackLines(display.stackLines);
   entryEl.value = entryDraft;
   entryEl.placeholder = "_";
   errorEl.textContent = display.error ?? "";
