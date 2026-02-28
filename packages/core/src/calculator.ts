@@ -41,18 +41,6 @@ export const stackToArray = <T>(stack: Stack<T>): ReadonlyArray<T> => {
   return values;
 };
 
-const stackPush = <T>(stack: Stack<T>, value: T): Stack<T> => ({
-  head: value,
-  tail: stack
-});
-
-const stackPop = <T>(stack: Stack<T>): { readonly value: T; readonly rest: Stack<T> } | null => {
-  if (stack === null) {
-    return null;
-  }
-  return { value: stack.head, rest: stack.tail };
-};
-
 const isSameSnapshot = (a: CalculatorSnapshot, b: CalculatorSnapshot): boolean =>
   a.stack === b.stack && a.entry === b.entry && a.error === b.error;
 
@@ -111,30 +99,32 @@ export const reduceSnapshot = (
 
 export const reduce = (state: CalculatorState, command: Command): CalculatorState => {
   if (command.type === "undo") {
-    const previous = stackPop(state.undoBuffer);
-    if (previous === null) {
+    if (state.undoBuffer === null) {
       return state;
     }
-    const current = state.snapshot;
     return {
       ...state,
-      snapshot: previous.value,
-      undoBuffer: previous.rest,
-      redoBuffer: stackPush(state.redoBuffer, current)
+      snapshot: state.undoBuffer.head,
+      undoBuffer: state.undoBuffer.tail,
+      redoBuffer: {
+        head: state.snapshot,
+        tail: state.redoBuffer
+      }
     };
   }
 
   if (command.type === "redo") {
-    const next = stackPop(state.redoBuffer);
-    if (next === null) {
+    if (state.redoBuffer === null) {
       return state;
     }
-    const current = state.snapshot;
     return {
       ...state,
-      snapshot: next.value,
-      undoBuffer: stackPush(state.undoBuffer, current),
-      redoBuffer: next.rest
+      snapshot: state.redoBuffer.head,
+      undoBuffer: {
+        head: state.snapshot,
+        tail: state.undoBuffer
+      },
+      redoBuffer: state.redoBuffer.tail
     };
   }
 
@@ -147,7 +137,10 @@ export const reduce = (state: CalculatorState, command: Command): CalculatorStat
   return {
     ...state,
     snapshot: after,
-    undoBuffer: stackPush(state.undoBuffer, before),
+    undoBuffer: {
+      head: before,
+      tail: state.undoBuffer
+    },
     redoBuffer: null
   };
 };
