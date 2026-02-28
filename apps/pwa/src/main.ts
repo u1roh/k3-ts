@@ -3,6 +3,8 @@ import "./style.css";
 
 type KeypadIntent = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "." | "BACK";
 
+type ConstKey = "PI" | "E";
+
 const keypadIntents: ReadonlyArray<KeypadIntent> = [
   "7", "8", "9",
   "4", "5", "6",
@@ -49,8 +51,13 @@ app.innerHTML = `
     </section>
     <section class="input-area">
       <div id="fx-panel" class="fx-panel hidden"></div>
+      <div id="const-panel" class="const-panel hidden">
+        <button class="const-key" data-const="PI" type="button">π</button>
+        <button class="const-key" data-const="E" type="button">e</button>
+      </div>
       <div class="entry-row">
         <input id="entry" class="entry-input" type="text" readonly />
+        <button id="const-toggle" class="const-toggle" type="button">π</button>
         <button id="enter-key" class="enter-key" type="button">ENTER</button>
       </div>
       <div id="keypad" class="keypad"></div>
@@ -63,16 +70,22 @@ let entryDraft = "";
 let fxOpen = false;
 let fxGesturePointerId: number | null = null;
 let fxHoverIntent: KeyIntent | null = null;
+let constOpen = false;
+let constGesturePointerId: number | null = null;
+let constHoverKey: ConstKey | null = null;
+
 const errorEl = document.querySelector<HTMLDivElement>("#error");
 const stackEl = document.querySelector<HTMLDivElement>("#stack");
 const entryEl = document.querySelector<HTMLInputElement>("#entry");
 const commandsEl = document.querySelector<HTMLDivElement>("#commands");
 const opsEl = document.querySelector<HTMLDivElement>("#ops");
 const fxPanelEl = document.querySelector<HTMLDivElement>("#fx-panel");
+const constPanelEl = document.querySelector<HTMLDivElement>("#const-panel");
+const constToggleEl = document.querySelector<HTMLButtonElement>("#const-toggle");
 const keypadEl = document.querySelector<HTMLDivElement>("#keypad");
 const enterKeyEl = document.querySelector<HTMLButtonElement>("#enter-key");
 
-if (!errorEl || !stackEl || !entryEl || !commandsEl || !opsEl || !fxPanelEl || !keypadEl || !enterKeyEl) {
+if (!errorEl || !stackEl || !entryEl || !commandsEl || !opsEl || !fxPanelEl || !constPanelEl || !constToggleEl || !keypadEl || !enterKeyEl) {
   throw new Error("Missing UI elements");
 }
 
@@ -155,32 +168,6 @@ const createFxKey = (label: string, intent: KeyIntent): HTMLButtonElement => {
   return button;
 };
 
-commandIntents.forEach(({ label, intent }) => {
-  commandsEl.append(createKey(label, intent, "command-key"));
-});
-
-keypadIntents.forEach((intent) => {
-  keypadEl.append(createKey(intent, intent, "key"));
-});
-
-operatorIntents.forEach((intent) => {
-  opsEl.append(createKey(intent, intent, "op-key"));
-});
-
-const fxToggleEl = createKey("f(x)", "FX", "fx-toggle");
-opsEl.append(fxToggleEl);
-
-functionIntents.forEach(({ label, intent }) => {
-  fxPanelEl.append(createFxKey(label, intent));
-});
-
-enterKeyEl.addEventListener("click", () => {
-  commitEntry();
-});
-
-const renderStackLines = (lines: ReadonlyArray<string>): string =>
-  lines.length === 0 ? "(empty)" : lines.join("<br />");
-
 const updateFxHover = (x: number, y: number) => {
   const hit = document.elementFromPoint(x, y);
   const button = hit?.closest(".fx-key") as HTMLButtonElement | null;
@@ -203,8 +190,52 @@ const finishFxGesture = () => {
   }
 };
 
+const updateConstHover = (x: number, y: number) => {
+  const hit = document.elementFromPoint(x, y);
+  const button = hit?.closest(".const-key") as HTMLButtonElement | null;
+  const next = (button?.dataset.const ?? null) as ConstKey | null;
+  if (next === constHoverKey) {
+    return;
+  }
+  constHoverKey = next;
+  render();
+};
+
+const applyConstant = (key: ConstKey) => {
+  entryDraft = key === "PI" ? `${Math.PI}` : `${Math.E}`;
+};
+
+const finishConstGesture = () => {
+  const selected = constHoverKey ?? "PI";
+  applyConstant(selected);
+  constGesturePointerId = null;
+  constHoverKey = null;
+  constOpen = false;
+  render();
+};
+
+commandIntents.forEach(({ label, intent }) => {
+  commandsEl.append(createKey(label, intent, "command-key"));
+});
+
+keypadIntents.forEach((intent) => {
+  keypadEl.append(createKey(intent, intent, "key"));
+});
+
+operatorIntents.forEach((intent) => {
+  opsEl.append(createKey(intent, intent, "op-key"));
+});
+
+const fxToggleEl = createKey("f(x)", "FX", "fx-toggle");
+opsEl.append(fxToggleEl);
+
+functionIntents.forEach(({ label, intent }) => {
+  fxPanelEl.append(createFxKey(label, intent));
+});
+
 fxToggleEl.addEventListener("pointerdown", (event) => {
   event.preventDefault();
+  constOpen = false;
   fxGesturePointerId = event.pointerId;
   fxHoverIntent = null;
   fxOpen = true;
@@ -212,29 +243,58 @@ fxToggleEl.addEventListener("pointerdown", (event) => {
   render();
 });
 
+constToggleEl.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  fxOpen = false;
+  constGesturePointerId = event.pointerId;
+  constHoverKey = null;
+  constOpen = true;
+  constToggleEl.setPointerCapture(event.pointerId);
+  render();
+});
+
 window.addEventListener("pointermove", (event) => {
-  if (fxGesturePointerId === null || event.pointerId !== fxGesturePointerId) {
+  if (constGesturePointerId !== null && event.pointerId === constGesturePointerId) {
+    updateConstHover(event.clientX, event.clientY);
     return;
   }
-  updateFxHover(event.clientX, event.clientY);
+  if (fxGesturePointerId !== null && event.pointerId === fxGesturePointerId) {
+    updateFxHover(event.clientX, event.clientY);
+  }
 });
 
 window.addEventListener("pointerup", (event) => {
-  if (fxGesturePointerId === null || event.pointerId !== fxGesturePointerId) {
+  if (constGesturePointerId !== null && event.pointerId === constGesturePointerId) {
+    finishConstGesture();
     return;
   }
-  finishFxGesture();
+  if (fxGesturePointerId !== null && event.pointerId === fxGesturePointerId) {
+    finishFxGesture();
+  }
 });
 
 window.addEventListener("pointercancel", (event) => {
-  if (fxGesturePointerId === null || event.pointerId !== fxGesturePointerId) {
+  if (constGesturePointerId !== null && event.pointerId === constGesturePointerId) {
+    constGesturePointerId = null;
+    constHoverKey = null;
+    constOpen = false;
+    render();
     return;
   }
-  fxGesturePointerId = null;
-  fxHoverIntent = null;
-  fxOpen = false;
-  render();
+  if (fxGesturePointerId !== null && event.pointerId === fxGesturePointerId) {
+    fxGesturePointerId = null;
+    fxHoverIntent = null;
+    fxOpen = false;
+    render();
+  }
 });
+
+enterKeyEl.addEventListener("click", () => {
+  commitEntry();
+});
+
+const renderStackLines = (lines: ReadonlyArray<string>): string =>
+  lines.length === 0 ? "(empty)" : lines.join("<br />");
 
 const render = () => {
   const display = facade.toDisplayModel();
@@ -243,9 +303,15 @@ const render = () => {
   entryEl.placeholder = "_";
   errorEl.textContent = display.error ?? "";
   fxPanelEl.classList.toggle("hidden", !fxOpen);
+  constPanelEl.classList.toggle("hidden", !constOpen);
   fxToggleEl.classList.toggle("active", fxOpen);
+  constToggleEl.classList.toggle("active", constOpen);
   fxPanelEl.querySelectorAll<HTMLButtonElement>(".fx-key").forEach((button) => {
     const active = button.dataset.intent === fxHoverIntent;
+    button.classList.toggle("active", active);
+  });
+  constPanelEl.querySelectorAll<HTMLButtonElement>(".const-key").forEach((button) => {
+    const active = button.dataset.const === constHoverKey;
     button.classList.toggle("active", active);
   });
 };

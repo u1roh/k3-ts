@@ -80,8 +80,24 @@ body {
 
 .entry-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 0.5rem;
+}
+
+.const-toggle {
+  border: none;
+  border-radius: 10px;
+  min-width: 3rem;
+  padding: 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #0f766e;
+  color: #ffffff;
+  touch-action: none;
+}
+
+.const-toggle.active {
+  background: #115e59;
 }
 
 .enter-key {
@@ -159,6 +175,37 @@ body {
   gap: 0.5rem;
 }
 
+.const-panel {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  z-index: 25;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 1px solid #94a3b8;
+  background: #e2e8f0;
+  box-shadow: 0 10px 20px rgb(15 23 42 / 18%);
+}
+
+.const-key {
+  min-height: 2.75rem;
+  min-width: 3rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #334155;
+  color: #ffffff;
+  touch-action: none;
+}
+
+.const-key.active {
+  background: #0f766e;
+}
+
 .fx-key {
   height: 3rem;
   min-height: 3rem;
@@ -193,6 +240,8 @@ body {
 .command-key:active,
 .fx-toggle:active,
 .fx-key:active,
+.const-toggle:active,
+.const-key:active,
 .op-key:active,
 .enter-key:active {
   transform: translateY(1px);
