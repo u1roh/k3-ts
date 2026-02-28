@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
-const repoName = "k3";
+const repoName = "k3-ts";
 
 export default defineConfig({
   base: "/" + repoName + "/",
