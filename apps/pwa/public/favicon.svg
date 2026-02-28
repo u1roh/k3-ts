@@ -1,4 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="12" fill="#111827"/>
-  <text x="50%" y="54%" text-anchor="middle" fill="#f9fafb" font-size="24" font-family="Arial">RPN</text>
+  <text
+    x="50%"
+    y="60%"
+    text-anchor="middle"
+    fill="#f9fafb"
+    font-size="48"
+    font-family="'Times New Roman', 'STIX Two Text', serif"
+    font-style="italic"
+  >
+    k<tspan font-size="36" baseline-shift="-34%">3</tspan>
+  </text>
 </svg>
