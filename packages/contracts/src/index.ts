@@ -2,7 +2,8 @@ import {
   CalculatorState,
   Command,
   initialState,
-  reduce
+  reduce,
+  stackToArray
 } from "@rpn/core";
 
 export interface DisplayModel {
@@ -27,7 +28,7 @@ export const createCalculatorFacade = (): CalculatorFacade => {
       return state;
     },
     toDisplayModel: (current = state) => ({
-      stackLines: current.stack.map((v) => `${v}`),
+      stackLines: stackToArray(current.stack).map((v) => `${v}`),
       entryLine: current.entry === "" ? "_" : current.entry,
       error: current.error
     })

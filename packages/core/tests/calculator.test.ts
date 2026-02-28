@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialState, reduce } from "../src";
+import { initialState, reduce, stackToArray } from "../src";
 
 const run = (sequence: Parameters<typeof reduce>[1][]) =>
   sequence.reduce(reduce, initialState());
@@ -14,7 +14,7 @@ describe("RPN reducer", () => {
       { type: "binary", operator: "+" }
     ]);
 
-    expect(state.stack).toEqual([7]);
+    expect(stackToArray(state.stack)).toEqual([7]);
     expect(state.error).toBeNull();
   });
 

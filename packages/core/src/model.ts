@@ -1,6 +1,9 @@
 export type CalcValue = number;
 
-export type Stack = ReadonlyArray<CalcValue>;
+export type Stack = null | {
+  readonly head: CalcValue;
+  readonly tail: Stack;
+};
 
 export interface CalculatorState {
   readonly stack: Stack;
