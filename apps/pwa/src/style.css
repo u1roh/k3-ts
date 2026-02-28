@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
   font-family: "Avenir Next", "Hiragino Kaku Gothic ProN", sans-serif;
-  background: radial-gradient(circle at top, #f9fafb, #e5e7eb);
+  background: #f3f4f6;
   color: #111827;
 }
 
@@ -9,63 +9,114 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  min-height: 100vh;
+  height: 100%;
+}
+
+#app {
+  height: 100%;
+}
+
+.screen {
+  min-height: 100dvh;
   display: grid;
-  place-items: center;
-}
-
-.shell {
-  width: min(100vw - 1.5rem, 420px);
-  background: #ffffffd9;
-  border-radius: 16px;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 12px 28px rgb(31 41 55 / 18%);
-  padding: 1rem;
-}
-
-.display {
-  background: #111827;
-  border-radius: 12px;
-  color: #f9fafb;
-  padding: 0.75rem;
-  margin-bottom: 0.75rem;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem max(0.75rem, env(safe-area-inset-bottom));
 }
 
 .error {
-  min-height: 1.25rem;
-  color: #fca5a5;
+  min-height: 1.1rem;
+  color: #dc2626;
   font-size: 0.8rem;
 }
 
+.stack-area {
+  min-height: 0;
+  background: #111827;
+  color: #f9fafb;
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .stack {
-  min-height: 6rem;
-  margin: 0;
+  overflow-y: auto;
+  align-self: start;
+  text-align: left;
+  line-height: 1.45;
   font-family: "Menlo", "Consolas", monospace;
 }
 
-.entry {
-  text-align: right;
-  font-size: 1.4rem;
-  font-weight: 600;
+.input-area {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
 }
 
-.keys {
+.entry-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-size: 1.25rem;
+  text-align: right;
+  background: #ffffff;
+}
+
+.enter-key {
+  border: none;
+  border-radius: 10px;
+  padding: 0 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.keypad-area {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
 .key {
+  min-height: 3.25rem;
   border: none;
   border-radius: 10px;
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
   background: linear-gradient(180deg, #f9fafb, #e5e7eb);
   color: #1f2937;
-  font-weight: 600;
 }
 
-.key:active {
+.ops {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.op-key {
+  min-height: 3rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: #1f2937;
+  color: #ffffff;
+}
+
+.key:active,
+.op-key:active,
+.enter-key:active {
   transform: translateY(1px);
 }

@@ -27,7 +27,7 @@ export const createCalculatorFacade = (): CalculatorFacade => {
       return state;
     },
     toDisplayModel: (current = state) => ({
-      stackLines: [...current.stack].reverse().map((v, i) => `${i}: ${v}`),
+      stackLines: current.stack.map((v, i) => `${i}: ${v}`),
       entryLine: current.entry === "" ? "_" : current.entry,
       error: current.error
     })
